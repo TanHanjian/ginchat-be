@@ -39,3 +39,22 @@ func GetUserList() []*UserBasic {
 func Create(user UserBasic) *gorm.DB {
 	return utils.DB.Create(&user)
 }
+
+func DeleteByUserID(user_id int) *gorm.DB {
+	var user UserBasic
+	user.ID = uint(user_id)
+	return utils.DB.Delete(&user)
+}
+
+func Update(user UserBasic) *gorm.DB {
+	var existingUser UserBasic
+	result := utils.DB.First(&existingUser, user.ID)
+	if result.Error != nil {
+		// 如果找不到记录，返回错误
+		return result
+	}
+
+	// 更新记录
+	result = utils.DB.Model(&existingUser).Updates(user)
+	return result
+}
