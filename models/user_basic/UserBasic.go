@@ -9,10 +9,10 @@ import (
 
 type UserBasic struct {
 	gorm.Model
-	Name          string
-	Password      string
-	Phone         string
-	Email         string
+	Name          string `gorm:"unique;not null"`
+	Password      string `gorm:"not null"`
+	Phone         string `gorm:"unique;not null"`
+	Email         string `gorm:"unique;not null"`
 	ClientIp      string
 	Identity      string
 	ClientPort    string
@@ -57,4 +57,19 @@ func Update(user UserBasic) *gorm.DB {
 	// 更新记录
 	result = utils.DB.Model(&existingUser).Updates(user)
 	return result
+}
+
+func FindByName(user *UserBasic) *gorm.DB {
+	var exist_user UserBasic
+	return utils.DB.Model(user).Where("name =", user.Name).First(&exist_user)
+}
+
+func FindByPhone(user *UserBasic) *gorm.DB {
+	var exist_user UserBasic
+	return utils.DB.Model(user).Where("phone =", user.Phone).First(&exist_user)
+}
+
+func FindByEmail(user *UserBasic) *gorm.DB {
+	var exist_user UserBasic
+	return utils.DB.Model(user).Where("email =", user.Email).First(&exist_user)
 }
