@@ -10,5 +10,8 @@ func main() {
 	utils.InitValidator()
 	utils.InitMySql()
 	r := router.Router()
-	r.Run(":8081")
+	err := r.Run(":8081")
+	if err != nil {
+		return
+	}
 }

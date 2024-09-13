@@ -19,3 +19,13 @@ type UserUpdateDto struct {
 	Email    string `json:"Email" validate:"omitempty,email"`
 	Phone    string `json:"Phone" validate:"omitempty,phone"`
 }
+
+type LoginByUserPhoneDto struct {
+	Phone    string `json:"phone" validate:"required,phone"`
+	Password string `json:"password" validate:"required"`
+}
+
+type LoginByUserEmailDto struct {
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
+}

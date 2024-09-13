@@ -59,17 +59,18 @@ func Update(user UserBasic) *gorm.DB {
 	return result
 }
 
-func FindByName(user *UserBasic) *gorm.DB {
+func FindByPhone(user *UserBasic) (*gorm.DB, UserBasic) {
 	var exist_user UserBasic
-	return utils.DB.Model(user).Where("name =", user.Name).First(&exist_user)
+	return utils.DB.Model(user).Where("phone = ?", user.Phone).First(&exist_user), exist_user
 }
 
-func FindByPhone(user *UserBasic) *gorm.DB {
+func FindByEmail(user *UserBasic) (*gorm.DB, UserBasic) {
 	var exist_user UserBasic
-	return utils.DB.Model(user).Where("phone =", user.Phone).First(&exist_user)
+	return utils.DB.Model(user).Where("email = ?", user.Email).First(&exist_user), exist_user
 }
 
-func FindByEmail(user *UserBasic) *gorm.DB {
+func CheckRepeat(user *UserBasic) (*gorm.DB, UserBasic) {
 	var exist_user UserBasic
-	return utils.DB.Model(user).Where("email =", user.Email).First(&exist_user)
+	res := utils.DB.Model(user).Where("name = ? OR email = ? OR phone = ?", user.Name, user.Email, user.Phone).First(&exist_user)
+	return res, exist_user
 }
