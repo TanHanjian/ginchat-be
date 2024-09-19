@@ -6,9 +6,7 @@ import (
 )
 
 func main() {
-	utils.InitConfig()
-	utils.InitValidator()
-	utils.InitMySql()
+	utils.Init()
 	r := router.Router()
 	err := r.Run(":8081")
 	if err != nil {

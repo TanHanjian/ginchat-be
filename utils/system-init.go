@@ -2,19 +2,12 @@ package utils
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"regexp"
-	"time"
-
+	"ginchat/mydb"
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	"regexp"
 )
 
-var DB *gorm.DB
 var Go_validate *validator.Validate
 
 func InitConfig() {
@@ -25,25 +18,7 @@ func InitConfig() {
 		fmt.Println(err)
 	}
 	fmt.Println("config app:", viper.Get("app"))
-	fmt.Println("config app:", viper.Get("mysql"))
-}
-
-func InitMySql() {
-	new_logger := logger.New(
-		log.New(os.Stdout, "\r\n", log.LstdFlags),
-		logger.Config{
-			SlowThreshold: time.Second,
-			LogLevel:      logger.Info,
-			Colorful:      true,
-		},
-	)
-	db1, err := gorm.Open(mysql.Open(viper.GetString("mysql.dsn")), &gorm.Config{
-		Logger: new_logger,
-	})
-	DB = db1
-	if err != nil {
-		fmt.Println(err)
-	}
+	fmt.Println("config app:", viper.Get("mydb"))
 }
 
 func validatePhone(fl validator.FieldLevel) bool {
@@ -56,4 +31,10 @@ func validatePhone(fl validator.FieldLevel) bool {
 func InitValidator() {
 	Go_validate = validator.New(validator.WithRequiredStructEnabled())
 	Go_validate.RegisterValidation("phone", validatePhone)
+}
+
+func Init() {
+	InitConfig()
+	mydb.InitMySql()
+	InitValidator()
 }

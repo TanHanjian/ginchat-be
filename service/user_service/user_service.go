@@ -203,9 +203,16 @@ func login[T any](c *gin.Context, fn FindUserFn) {
 		return
 	}
 	exist_user.Password = ""
+	token, err := utils.GenerateJWT(exist_user)
+	if err != nil {
+		c.JSON(-1, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
 	c.JSON(200, gin.H{
 		"message": "succeeded",
-		"data":    exist_user,
+		"token":   token,
 	})
 }
 
