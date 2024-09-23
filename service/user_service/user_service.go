@@ -144,6 +144,23 @@ func setUpdateUser[T any](user_dto *T, user *user_models.UserBasic) error {
 	return nil
 }
 
+func getUserIdFromToken(c *gin.Context) (uint, error) {
+	userAny, exists := c.Get("user")
+	if !exists {
+		return 0, errors.New("user not found")
+	}
+	user, ok := userAny.(map[string]interface{})
+	if !ok {
+		return 0, errors.New("user data type error")
+	}
+	// 现在可以安全地使用 user 数据
+	userID, ok := user["id"].(float64) // 假设 ID 是数字类型
+	if !ok {
+		return 0, errors.New("no user id")
+	}
+	return uint(userID), nil
+}
+
 func UpdateUser(c *gin.Context) {
 	err, user_dto := bodyToModel[UserUpdateDto](c)
 	if err != nil {
@@ -151,9 +168,16 @@ func UpdateUser(c *gin.Context) {
 			"message": err.Error(),
 		})
 	}
+	user_id, err := getUserIdFromToken(c)
+	if err != nil {
+		c.JSON(-1, gin.H{
+			"message": err.Error(),
+		})
+		return
+	}
 	update_user := user_models.UserBasic{
 		Model: gorm.Model{
-			ID: uint(user_dto.User_id),
+			ID: user_id,
 		},
 	}
 	if err := setUpdateUser[UserUpdateDto](&user_dto, &update_user); err != nil {

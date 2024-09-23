@@ -13,7 +13,6 @@ type UserDeleteDto struct {
 }
 
 type UserUpdateDto struct {
-	User_id  int    `json:"userId" validate:"required"`
 	Name     string `json:"name" validate:"omitempty"`
 	Password string `json:"password" validate:"omitempty"`
 	Email    string `json:"Email" validate:"omitempty,email"`

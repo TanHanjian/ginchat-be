@@ -3,6 +3,7 @@ package user_models
 import (
 	"fmt"
 	"ginchat/mydb"
+
 	"gorm.io/gorm"
 )
 
@@ -72,4 +73,9 @@ func CheckRepeat(user *UserBasic) (*gorm.DB, UserBasic) {
 	var exist_user UserBasic
 	res := mydb.DB.Model(&UserBasic{}).Where("name = ? OR email = ? OR phone = ?", user.Name, user.Email, user.Phone).First(&exist_user)
 	return res, exist_user
+}
+
+func FindByID(id uint) (*gorm.DB, UserBasic) {
+	var exist_user UserBasic
+	return mydb.DB.Model(&UserBasic{}).First(&exist_user, id), exist_user
 }

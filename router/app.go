@@ -1,6 +1,7 @@
 package router
 
 import (
+	"ginchat/middlewares"
 	"ginchat/service"
 	"ginchat/service/user_service"
 
@@ -10,11 +11,14 @@ import (
 func Router() *gin.Engine {
 	r := gin.Default()
 	r.GET("/ping", service.GetIndex)
-	r.GET("/user/list", user_service.GetUserList)
-	r.POST("/user/create", user_service.CreateUser)
-	r.POST("/user/delete", user_service.DeleteUserById)
-	r.POST("/user/update", user_service.UpdateUser)
-	r.POST("/user/login/phone", user_service.LoginByUserPhone)
-	r.POST("/user/login/email", user_service.LoginByUserEmail)
+	user := r.Group("/user")
+	{
+		user.GET("/list", user_service.GetUserList)
+		user.POST("/create", user_service.CreateUser)
+		user.POST("/delete", user_service.DeleteUserById)
+		user.POST("/update", middlewares.AuthMiddleware(), user_service.UpdateUser)
+		user.POST("/login/phone", user_service.LoginByUserPhone)
+		user.POST("/login/email", user_service.LoginByUserEmail)
+	}
 	return r
 }

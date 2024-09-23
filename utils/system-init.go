@@ -3,9 +3,11 @@ package utils
 import (
 	"fmt"
 	"ginchat/mydb"
+	"ginchat/myredis"
+	"regexp"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
-	"regexp"
 )
 
 var Go_validate *validator.Validate
@@ -35,6 +37,7 @@ func InitValidator() {
 
 func Init() {
 	InitConfig()
+	myredis.InitRedis()
 	mydb.InitMySql()
 	InitValidator()
 }
