@@ -95,6 +95,12 @@ func CreateFriendApply(c *gin.Context) {
 		})
 		return
 	}
+	if user_id == to_user_dto.Friend_Id {
+		c.JSON(-1, gin.H{
+			"message": "不能添加自己为好友",
+		})
+		return
+	}
 	_, err = friend_models.CreateFriendApply(user_id, to_user_dto.Friend_Id, to_user_dto.Reason)
 	if err != nil {
 		c.JSON(-1, gin.H{

@@ -3,22 +3,30 @@ package user_models
 import (
 	"fmt"
 	"ginchat/mydb"
+	"time"
 
 	"gorm.io/gorm"
 )
 
+type Model struct {
+	ID        uint           `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+}
+
 type UserBasic struct {
-	gorm.Model
-	Name          string `gorm:"unique;not null"`
-	Password      string `gorm:"not null"`
-	Phone         string `gorm:"unique;not null"`
-	Email         string `gorm:"unique;not null"`
-	ClientIp      string
-	Identity      string
-	ClientPort    string
-	LoginTime     uint64
-	HeartbeatTime uint64
-	LogoutTime    uint64
+	Model
+	Name          string `gorm:"unique;not null" json:"name"`
+	Password      string `gorm:"not null" json:"password"`
+	Phone         string `gorm:"unique;not null" json:"phone"`
+	Email         string `gorm:"unique;not null" json:"email"`
+	ClientIp      string `json:"clientIp"`
+	Identity      string `json:"identity"`
+	ClientPort    string `json:"clientPort"`
+	LoginTime     uint64 `json:"loginTime"`
+	HeartbeatTime uint64 `json:"heartbeatTime"`
+	LogoutTime    uint64 `json:"logoutTime"`
 	IsLogout      bool
 	DeviceInfo    string
 }

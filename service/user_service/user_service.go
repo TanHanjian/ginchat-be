@@ -8,7 +8,6 @@ import (
 	"reflect"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 func GetUserList(c *gin.Context) {
@@ -140,7 +139,7 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 	update_user := user_models.UserBasic{
-		Model: gorm.Model{
+		Model: user_models.Model{
 			ID: user_id,
 		},
 	}

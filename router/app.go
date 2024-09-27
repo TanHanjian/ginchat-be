@@ -31,8 +31,8 @@ func Router() *gin.Engine {
 		friend_apply.POST("/create", friend_service.CreateFriendApply)
 		friend_apply.POST("/agree", friend_service.AgreeFriendApply)
 		friend_apply.POST("/reject", friend_service.RejectFriendApply)
-		friend_apply.GET("/to_list", friend_service.GetFriendApplyToList)
-		friend_apply.GET("/from_list", friend_service.GetFriendApplyFromList)
+		friend_apply.POST("/to_list", friend_service.GetFriendApplyToList)
+		friend_apply.POST("/from_list", friend_service.GetFriendApplyFromList)
 	}
 	return r
 }

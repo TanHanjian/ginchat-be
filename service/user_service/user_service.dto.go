@@ -4,8 +4,8 @@ type UserCreateDto struct {
 	Name        string `json:"name" validate:"required"`
 	Password    string `json:"password" validate:"required"`
 	Re_password string `json:"rePassword" validate:"required"`
-	Email       string `json:"Email" validate:"required,email"`
-	Phone       string `json:"Phone" validate:"required,phone"`
+	Email       string `json:"email" validate:"required,email"`
+	Phone       string `json:"phone" validate:"required,phone"`
 }
 
 type UserDeleteDto struct {
@@ -15,8 +15,8 @@ type UserDeleteDto struct {
 type UserUpdateDto struct {
 	Name     string `json:"name" validate:"omitempty"`
 	Password string `json:"password" validate:"omitempty"`
-	Email    string `json:"Email" validate:"omitempty,email"`
-	Phone    string `json:"Phone" validate:"omitempty,phone"`
+	Email    string `json:"email" validate:"omitempty,email"`
+	Phone    string `json:"phone" validate:"omitempty,phone"`
 }
 
 type LoginByUserPhoneDto struct {

@@ -4,21 +4,29 @@ import (
 	"errors"
 	user_models "ginchat/models/user_basic"
 	"ginchat/mydb"
+	"time"
 
 	"gorm.io/gorm"
 )
 
+type Model struct {
+	ID        uint           `gorm:"primarykey" json:"id"`
+	CreatedAt time.Time      `json:"created_at"`
+	UpdatedAt time.Time      `json:"updated_at"`
+	DeletedAt gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
+}
+
 type FriendRelation struct {
-	User_Id   uint
-	Friend_Id uint
+	User_Id   uint `json:"userId"`
+	Friend_Id uint `json:"friendId"`
 }
 
 type FriendApply struct {
-	gorm.Model
-	From_User_Id uint
-	To_Friend_Id uint
-	Status       uint
-	Reason       string
+	Model
+	From_User_Id uint   `json:"fromUserId"`
+	To_Friend_Id uint   `json:"toFriendId"`
+	Status       uint   `json:"status"`
+	Reason       string `json:"reason"`
 }
 
 const (
@@ -55,8 +63,8 @@ func GetFriendList(user_id uint) ([]user_models.UserBasic, error) {
 func GetFriendApplyToList(user_id uint) ([]FriendApply, error) {
 	var list []FriendApply
 	err := mydb.DB.Raw(`
-		SELECT * FROM friend_approve WHERE to_friend_id = ?
-	`, user_id).Scan(&list).Error
+		SELECT * FROM friend_apply WHERE to_friend_id = ? AND status = ?
+	`, user_id, ApplyPending).Scan(&list).Error
 	if err != nil {
 		return nil, err
 	}
@@ -66,12 +74,21 @@ func GetFriendApplyToList(user_id uint) ([]FriendApply, error) {
 func GetFriendApplyFromList(user_id uint) ([]FriendApply, error) {
 	var list []FriendApply
 	err := mydb.DB.Raw(`
-		SELECT * FROM friend_approve WHERE from_friend_id = ?
-	`, user_id).Scan(&list).Error
+		SELECT * FROM friend_apply WHERE from_user_id = ? AND status = ?
+	`, user_id, ApplyPending).Scan(&list).Error
 	if err != nil {
 		return nil, err
 	}
 	return list, nil
+}
+
+func FindFriendApply(from_user_id, to_friend_id uint) (FriendApply, error) {
+	var apply FriendApply
+	err := mydb.DB.Table("friend_apply").Where("from_user_id = ? AND to_friend_id = ?", from_user_id, to_friend_id).First(&apply).Error
+	if err != nil {
+		return FriendApply{}, err
+	}
+	return apply, nil
 }
 
 func CreateFriendApply(from_user_id, to_friend_id uint, reason string) (FriendApply, error) {
@@ -81,6 +98,13 @@ func CreateFriendApply(from_user_id, to_friend_id uint, reason string) (FriendAp
 	}
 	if is_friend {
 		return FriendApply{}, errors.New("already friends")
+	}
+	_, err = FindFriendApply(from_user_id, to_friend_id)
+	if err == nil {
+		return FriendApply{}, errors.New("already applied")
+	}
+	if err != gorm.ErrRecordNotFound {
+		return FriendApply{}, err
 	}
 	approve := FriendApply{
 		From_User_Id: from_user_id,
