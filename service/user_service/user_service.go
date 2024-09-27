@@ -8,7 +8,6 @@ import (
 	"reflect"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gin-gonic/gin/binding"
 	"gorm.io/gorm"
 )
 
@@ -21,8 +20,8 @@ func GetUserList(c *gin.Context) {
 }
 
 func checkNoRepeatUser(new_user *user_models.UserBasic) error {
-	repeat_res, repeat_user := user_models.CheckRepeat(new_user)
-	if repeat_res.Error == nil {
+	repeat_user, error := user_models.CheckRepeat(new_user)
+	if error == nil {
 		if repeat_user.Name == new_user.Name {
 			return errors.New("user name is existed")
 		}
@@ -36,26 +35,8 @@ func checkNoRepeatUser(new_user *user_models.UserBasic) error {
 	return nil
 }
 
-func bodyToModel[T any](c *gin.Context) (error, T) {
-	var user_dto T
-	if bind_error := c.ShouldBindBodyWith(&user_dto, binding.JSON); bind_error != nil {
-		c.JSON(-1, gin.H{
-			"message": bind_error.Error(),
-		})
-		return bind_error, user_dto
-	}
-	err := utils.Go_validate.Struct(&user_dto)
-	if err != nil {
-		c.JSON(-1, gin.H{
-			"message": err.Error(),
-		})
-		return err, user_dto
-	}
-	return nil, user_dto
-}
-
 func CreateUser(c *gin.Context) {
-	err, user_dto := bodyToModel[UserCreateDto](c)
+	user_dto, err := utils.BodyToModel[UserCreateDto](c)
 	if err != nil {
 		c.JSON(-1, gin.H{
 			"message": err.Error(),
@@ -79,10 +60,10 @@ func CreateUser(c *gin.Context) {
 		})
 		return
 	}
-	result := user_models.Create(new_user)
-	if result.Error != nil {
+	err = user_models.Create(new_user)
+	if err != nil {
 		c.JSON(-1, gin.H{
-			"message": result.Error.Error(),
+			"message": err.Error(),
 		})
 	} else {
 		c.JSON(200, gin.H{
@@ -92,16 +73,16 @@ func CreateUser(c *gin.Context) {
 }
 
 func DeleteUserById(c *gin.Context) {
-	err, user_dto := bodyToModel[UserDeleteDto](c)
+	user_dto, err := utils.BodyToModel[UserDeleteDto](c)
 	if err != nil {
 		c.JSON(-1, gin.H{
 			"message": err.Error(),
 		})
 	}
-	result := user_models.DeleteByUserID(user_dto.User_id)
-	if result.Error != nil {
+	err = user_models.DeleteByUserID(user_dto.User_id)
+	if err != nil {
 		c.JSON(-1, gin.H{
-			"message": result.Error.Error(),
+			"message": err.Error(),
 		})
 	} else {
 		c.JSON(200, gin.H{
@@ -144,31 +125,14 @@ func setUpdateUser[T any](user_dto *T, user *user_models.UserBasic) error {
 	return nil
 }
 
-func getUserIdFromToken(c *gin.Context) (uint, error) {
-	userAny, exists := c.Get("user")
-	if !exists {
-		return 0, errors.New("user not found")
-	}
-	user, ok := userAny.(map[string]interface{})
-	if !ok {
-		return 0, errors.New("user data type error")
-	}
-	// 现在可以安全地使用 user 数据
-	userID, ok := user["id"].(float64) // 假设 ID 是数字类型
-	if !ok {
-		return 0, errors.New("no user id")
-	}
-	return uint(userID), nil
-}
-
 func UpdateUser(c *gin.Context) {
-	err, user_dto := bodyToModel[UserUpdateDto](c)
+	user_dto, err := utils.BodyToModel[UserUpdateDto](c)
 	if err != nil {
 		c.JSON(-1, gin.H{
 			"message": err.Error(),
 		})
 	}
-	user_id, err := getUserIdFromToken(c)
+	user_id, err := utils.GetUserIdFromToken(c)
 	if err != nil {
 		c.JSON(-1, gin.H{
 			"message": err.Error(),
@@ -180,17 +144,16 @@ func UpdateUser(c *gin.Context) {
 			ID: user_id,
 		},
 	}
-	if err := setUpdateUser[UserUpdateDto](&user_dto, &update_user); err != nil {
+	if user_dto.Name != "" {
+		update_user.Name = user_dto.Name
+	}
+	if user_dto.Password != "" {
+		update_user.Password = utils.Md5(user_dto.Password)
+	}
+	err = user_models.Update(update_user)
+	if err != nil {
 		c.JSON(-1, gin.H{
 			"message": err.Error(),
-		})
-		return
-	}
-	user_dto.Password = utils.Md5(user_dto.Password)
-	result := user_models.Update(update_user)
-	if result.Error != nil {
-		c.JSON(-1, gin.H{
-			"message": result.Error.Error(),
 		})
 	} else {
 		c.JSON(200, gin.H{
@@ -199,10 +162,10 @@ func UpdateUser(c *gin.Context) {
 	}
 }
 
-type FindUserFn func(user *user_models.UserBasic) (*gorm.DB, user_models.UserBasic)
+type FindUserFn func(user *user_models.UserBasic) (user_models.UserBasic, error)
 
 func login[T any](c *gin.Context, fn FindUserFn) {
-	err, user_dto := bodyToModel[T](c)
+	user_dto, err := utils.BodyToModel[T](c)
 	if err != nil {
 		c.JSON(-1, gin.H{
 			"message": err.Error(),
@@ -214,10 +177,10 @@ func login[T any](c *gin.Context, fn FindUserFn) {
 			"message": err.Error(),
 		})
 	}
-	res, exist_user := fn(&user)
-	if res.Error != nil {
+	exist_user, err := fn(&user)
+	if err != nil {
 		c.JSON(-1, gin.H{
-			"message": res.Error.Error(),
+			"message": err.Error(),
 		})
 	}
 	if exist_user.Password != utils.Md5(user.Password) {

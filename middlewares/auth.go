@@ -26,7 +26,7 @@ func AuthMiddleware() gin.HandlerFunc {
 		// 2. 验证token是否合法
 		claims, err := utils.ValidateJWT(token)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "无效的token"})
+			c.JSON(http.StatusUnauthorized, gin.H{"message": err.Error()})
 			c.Abort()
 			return
 		}
@@ -49,8 +49,8 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		// 4. 如果Redis中没有，从数据库获取用户信息
-		result, user := user_models.FindByID(claims.ID)
-		if result.Error != nil {
+		user, error := user_models.FindByID(claims.ID)
+		if error != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{"message": "用户不存在"})
 			c.Abort()
 			return

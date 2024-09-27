@@ -3,6 +3,7 @@ package router
 import (
 	"ginchat/middlewares"
 	"ginchat/service"
+	"ginchat/service/friend_service"
 	"ginchat/service/user_service"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +20,19 @@ func Router() *gin.Engine {
 		user.POST("/update", middlewares.AuthMiddleware(), user_service.UpdateUser)
 		user.POST("/login/phone", user_service.LoginByUserPhone)
 		user.POST("/login/email", user_service.LoginByUserEmail)
+	}
+	friend := r.Group("/friend")
+	friend.Use(middlewares.AuthMiddleware())
+	{
+		friend.POST("/list", friend_service.GetFriendList)
+	}
+	friend_apply := friend.Group("/apply")
+	{
+		friend_apply.POST("/create", friend_service.CreateFriendApply)
+		friend_apply.POST("/agree", friend_service.AgreeFriendApply)
+		friend_apply.POST("/reject", friend_service.RejectFriendApply)
+		friend_apply.GET("/to_list", friend_service.GetFriendApplyToList)
+		friend_apply.GET("/from_list", friend_service.GetFriendApplyFromList)
 	}
 	return r
 }

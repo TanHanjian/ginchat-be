@@ -2,9 +2,10 @@ package utils
 
 import (
 	user_models "ginchat/models/user_basic"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/spf13/viper"
-	"time"
 )
 
 type CustomClaims struct {
@@ -13,7 +14,7 @@ type CustomClaims struct {
 }
 
 func GenerateJWT(user user_models.UserBasic) (string, error) {
-	expirationTime := time.Now().Add(5 * time.Minute) // 设置过期时间
+	expirationTime := time.Now().Add(60 * time.Minute) // 设置过期时间
 
 	claims := CustomClaims{
 		user,
@@ -31,7 +32,8 @@ func GenerateJWT(user user_models.UserBasic) (string, error) {
 func ValidateJWT(tokenString string) (*CustomClaims, error) {
 	claims := &CustomClaims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
-		return viper.GetString("jwt.key"), nil
+		key := viper.GetString("jwt.key")
+		return []byte(key), nil
 	})
 	if err != nil || !token.Valid {
 		return nil, err
