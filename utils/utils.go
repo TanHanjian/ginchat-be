@@ -22,19 +22,19 @@ func GetUserIdFromToken(c *gin.Context) (uint, error) {
 }
 
 func BodyToModel[T any](c *gin.Context) (T, error) {
-	var user_dto T
-	if bind_error := c.ShouldBindBodyWith(&user_dto, binding.JSON); bind_error != nil {
-		c.JSON(-1, gin.H{
+	var dto T
+	if bind_error := c.ShouldBindBodyWith(&dto, binding.JSON); bind_error != nil {
+		c.JSON(200, gin.H{
 			"message": bind_error.Error(),
 		})
-		return user_dto, bind_error
+		return dto, bind_error
 	}
-	err := Go_validate.Struct(&user_dto)
+	err := Go_validate.Struct(&dto)
 	if err != nil {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": err.Error(),
 		})
-		return user_dto, err
+		return dto, err
 	}
-	return user_dto, nil
+	return dto, nil
 }

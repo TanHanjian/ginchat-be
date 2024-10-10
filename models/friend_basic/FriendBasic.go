@@ -47,6 +47,11 @@ func IsFriend(user_id, friend_id uint) (bool, error) {
 	return true, nil
 }
 
+func DeleteFriend(user_id, friend_id uint) error {
+	err := mydb.DB.Table("friend_basic").Where("user_id = ? AND friend_id = ?", user_id, friend_id).Delete(&FriendRelation{}).Error
+	return err
+}
+
 func GetFriendList(user_id uint) ([]user_models.UserBasic, error) {
 	var friends []user_models.UserBasic
 	err := mydb.DB.Table("user_basic").

@@ -12,3 +12,7 @@ type AgreeFriendApplyDto struct {
 type RejectFriendApplyDto struct {
 	Apply_Id uint `json:"applyId" binding:"required"`
 }
+
+type DeleteFriendApplyDto struct {
+	Friend_Id uint `json:"friendId" binding:"required"`
+}

@@ -37,12 +37,12 @@ func checkNoRepeatUser(new_user *user_models.UserBasic) error {
 func CreateUser(c *gin.Context) {
 	user_dto, err := utils.BodyToModel[UserCreateDto](c)
 	if err != nil {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": err.Error(),
 		})
 	}
 	if user_dto.Re_password != user_dto.Password {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": "password is not equal to re_password!",
 		})
 		return
@@ -54,14 +54,14 @@ func CreateUser(c *gin.Context) {
 		Phone:    user_dto.Phone,
 	}
 	if err := checkNoRepeatUser(&new_user); err != nil {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": err.Error(),
 		})
 		return
 	}
 	err = user_models.Create(new_user)
 	if err != nil {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": err.Error(),
 		})
 	} else {
@@ -74,13 +74,13 @@ func CreateUser(c *gin.Context) {
 func DeleteUserById(c *gin.Context) {
 	user_dto, err := utils.BodyToModel[UserDeleteDto](c)
 	if err != nil {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": err.Error(),
 		})
 	}
 	err = user_models.DeleteByUserID(user_dto.User_id)
 	if err != nil {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": err.Error(),
 		})
 	} else {
@@ -127,13 +127,13 @@ func setUpdateUser[T any](user_dto *T, user *user_models.UserBasic) error {
 func UpdateUser(c *gin.Context) {
 	user_dto, err := utils.BodyToModel[UserUpdateDto](c)
 	if err != nil {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": err.Error(),
 		})
 	}
 	user_id, err := utils.GetUserIdFromToken(c)
 	if err != nil {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": err.Error(),
 		})
 		return
@@ -151,7 +151,7 @@ func UpdateUser(c *gin.Context) {
 	}
 	err = user_models.Update(update_user)
 	if err != nil {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": err.Error(),
 		})
 	} else {
@@ -166,24 +166,24 @@ type FindUserFn func(user *user_models.UserBasic) (user_models.UserBasic, error)
 func login[T any](c *gin.Context, fn FindUserFn) {
 	user_dto, err := utils.BodyToModel[T](c)
 	if err != nil {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": err.Error(),
 		})
 	}
 	var user user_models.UserBasic
 	if err := setUpdateUser[T](&user_dto, &user); err != nil {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": err.Error(),
 		})
 	}
 	exist_user, err := fn(&user)
 	if err != nil {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": err.Error(),
 		})
 	}
 	if exist_user.Password != utils.Md5(user.Password) {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": "password is wrong!",
 		})
 		return
@@ -191,7 +191,7 @@ func login[T any](c *gin.Context, fn FindUserFn) {
 	exist_user.Password = ""
 	token, err := utils.GenerateJWT(exist_user)
 	if err != nil {
-		c.JSON(-1, gin.H{
+		c.JSON(200, gin.H{
 			"message": err.Error(),
 		})
 		return

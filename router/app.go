@@ -25,6 +25,7 @@ func Router() *gin.Engine {
 	friend.Use(middlewares.AuthMiddleware())
 	{
 		friend.POST("/list", friend_service.GetFriendList)
+		friend.POST("/delete", friend_service.DeleteFriend)
 	}
 	friend_apply := friend.Group("/apply")
 	{
