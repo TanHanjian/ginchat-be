@@ -30,7 +30,7 @@ func (c *Client) Read(manager *ClientManager) {
 			break
 		}
 		switch msg.Type {
-		case 3:
+		case msgHeatbeat:
 			{
 				c.Heatbeat <- time.Now()
 			}
@@ -62,7 +62,7 @@ func (c *Client) HeatbeatCheck() {
 	timer := time.NewTimer(2 * time.Second) // 创建一个定时器
 	defer timer.Stop()
 	for range ticker.C {
-		pingReq := WsMessage{Type: 3, UserId: c.UserId}
+		pingReq := WsMessage{Type: msgHeatbeat, UserId: c.UserId}
 		bytes, _ := json.Marshal(&pingReq)
 		c.Send <- bytes
 		// 重置定时器

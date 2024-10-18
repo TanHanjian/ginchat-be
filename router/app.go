@@ -6,11 +6,27 @@ import (
 	"ginchat/service/friend_service"
 	"ginchat/service/user_service"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
+func setCorsConfig(r *gin.Engine) *gin.Engine {
+	corsConfig := cors.Config{
+		AllowAllOrigins: true, // 允许所有来源
+		// 或者可以指定特定的来源
+		// AllowOrigins: []string{"http://example.com"},
+		AllowMethods:  []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowHeaders:  []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders: []string{"Content-Length"},
+		MaxAge:        12 * 3600, // 预检请求的有效期
+	}
+	r.Use(cors.New(corsConfig))
+	return r
+}
+
 func Router() *gin.Engine {
 	r := gin.Default()
+	r = setCorsConfig(r)
 	r.GET("/ping", service.GetIndex)
 	user := r.Group("/user")
 	{

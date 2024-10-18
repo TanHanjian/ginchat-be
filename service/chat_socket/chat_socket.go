@@ -9,8 +9,19 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+// 定义枚举类型
+type MsgType int
+
+const (
+	msgError MsgType = iota // 0
+	msgNormal
+	msgHeatbeat
+	msgUserJoin
+	msgChatHistory
+)
+
 type WsMessage struct {
-	Type   int         `json:"type"`
+	Type   MsgType     `json:"type"`
 	Data   interface{} `json:"data"`
 	UserId uint        `json:"userID"`
 }

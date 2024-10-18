@@ -1,6 +1,9 @@
 package chatsocket
 
-import "encoding/json"
+import (
+	"encoding/json"
+	chathisotry_models "ginchat/models/chat_history"
+)
 
 type ClientManager struct {
 	Clients    map[uint]*Client // 记录在线用户
@@ -30,7 +33,7 @@ func (manager *ClientManager) Quit() {
 		delete(manager.Clients, userID)
 		// 给客户端刷新在线人数
 		if len(manager.Clients) > 0 {
-			resp, _ := json.Marshal(&WsMessage{Type: 1, Data: len(manager.Clients), UserId: userID})
+			resp, _ := json.Marshal(&WsMessage{Type: msgUserJoin, Data: len(manager.Clients), UserId: userID})
 			manager.Broadcast <- resp
 		} else {
 			chatroomManger.RemoveChatroomClientManager(manager.ChatroomID)
@@ -39,10 +42,21 @@ func (manager *ClientManager) Quit() {
 }
 
 func (manager *ClientManager) InitSend(cur *Client, count int, userId uint) {
-	resp, _ := json.Marshal(&WsMessage{Type: 1, Data: count, UserId: userId})
+	resp, _ := json.Marshal(&WsMessage{Type: msgUserJoin, Data: count, UserId: userId})
 	manager.Broadcast <- resp
 
-	bytes, _ := json.Marshal(&WsMessage{Type: 2, Data: "123", UserId: userId})
+	params := chathisotry_models.GetChatHistoryParams{
+		PageSize:   10,
+		PageNo:     1,
+		ChatroomID: manager.ChatroomID,
+	}
+	historyList, err := chathisotry_models.GetChatHistory(params)
+	var bytes []byte
+	if err != nil {
+		bytes, _ = json.Marshal(&WsMessage{Type: msgError, Data: err.Error(), UserId: userId})
+	} else {
+		bytes, _ = json.Marshal(&WsMessage{Type: msgChatHistory, Data: &historyList, UserId: userId})
+	}
 	cur.Send <- bytes
 }
 
